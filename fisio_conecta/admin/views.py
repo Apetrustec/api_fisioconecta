@@ -2,6 +2,7 @@ from fisio_conecta import models as m
 from fisio_conecta.pessoa import serializers as pessoaserializers
 from fisio_conecta.atendimento import serializers as atendimentoserializers
 from fisio_conecta.avaliacao import serializers as AvaliacoesSerializer
+from fisio_conecta.admin import serializers as adminserializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -14,6 +15,7 @@ from fisio_conecta.avaliacao.filters import AvaliacaoFilter
 from django.db.models import Count,Q
 from fisio_conecta.utils import formatarTelefone
 from fisio_conecta.integracoes.send_zapi import SendZapi
+
 
 
 
@@ -36,6 +38,7 @@ class LoginAdmin(APIView):
             return Response(status=status.HTTP_200_OK)
             
         except Exception as e:
+            print(f"Erro interno: {str(e)}")
             return Response({"error": f"Erro interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
 
@@ -286,8 +289,94 @@ class ListarAvaliacoesAdmin(APIView):
             return Response({"error": f"Erro ao listar avaliações: {str(e)}"}, status=500)
 
 
+class EspecialidadeAdmin(APIView):
+    """
+    Endpoint para o administrador cadastrar especialidades.
+    """
+    authentication_classes = [FirebaseAuthentication]
+    permission_classes = [IsAdmin]
 
-    
+    def get(self, request):
+        try:
+            admin = m.Administrador.objects.filter(pessoa__email=request.user_data.get("email")).first()
+            if not admin:
+                return Response({"error": "Você não tem permissão para executar essa ação."}, status=status.HTTP_403_FORBIDDEN)
+
+            especialidades = m.Especialidade.objects.all()
+            serializer = atendimentoserializers.EspecialidadeSerializer(especialidades, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"Erro ao Listar especialidades: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request):
+        """
+        Cadastra uma nova especialidade.
+        """
+        try:
+            admin = m.Administrador.objects.filter(pessoa__email=request.user_data.get("email")).first()
+            if not admin:
+                return Response({"error": "Você não tem permissão para executar essa ação."}, status=403)
+
+            nome = (request.data.get("nome") or "").strip()
+            if not nome:
+                return Response({"error": "Nome da especialidade não fornecido."}, status=400)
+
+            existente = m.Especialidade.objects.filter(nome__iexact=nome).first()
+            if existente:
+                return Response(
+                    {"error": "Especialidade já existe.", "id_especialidade": existente.id_especialidade},
+                    status=409
+                )
+
+            especialidade = m.Especialidade.objects.create(nome=nome, ativo=True)
+            serializer = atendimentoserializers.EspecialidadeSerializer(especialidade)
+            return Response(serializer.data, status=201)
+
+        except Exception as e:
+            print(f"Erro ao cadastrar especialidade: {str(e)}")
+            return Response({"error": str(e)}, status=500)
+
+class cadastrarAdminOrGetAdmin(APIView):
+    """
+    Endpoint para o administrador cadastrar outros administradores.
+    """
+    authentication_classes = [FirebaseAuthentication]
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        try:
+            admin = m.Administrador.objects.filter(pessoa__email=request.user_data.get("email")).first()
+            if not admin:
+                return Response({"error": "Você não tem permissão para executar essa ação."}, status=403)
+
+            admins = m.Administrador.objects.all()
+            serializer = adminserializers.AdminSerializer(admins, many=True)
+            return Response(serializer.data, status=200)
+
+        except Exception as e:
+            return Response({"error": f"Erro ao listar administradores: {str(e)}"}, status=500)
+
+    def post(self, request):
+        try:
+            admin = m.Administrador.objects.filter(pessoa__email=request.user_data.get("email")).first()
+            if not admin:
+                return Response({"error": "Você não tem permissão para executar essa ação."}, status=403)
+
+            email = request.data.get("email", "").strip()
+            pessoa = m.Pessoa.objects.filter(email=email).first()
+            if not pessoa:
+                return Response({"error": "Pessoa com esse email não encontrada."}, status=404)
+
+            existente = m.Administrador.objects.filter(pessoa=pessoa).first()
+            if existente:
+                return Response({"error": "Essa pessoa já é um administrador."}, status=409)
+
+            novo_admin = m.Administrador.objects.create(pessoa=pessoa)
+            serializer = adminserializers.AdminSerializer(novo_admin)
+            return Response(serializer.data, status=201)
+
+        except Exception as e:
+            return Response({"error": f"Erro ao cadastrar administrador: {str(e)}"}, status=500)
         
 
 

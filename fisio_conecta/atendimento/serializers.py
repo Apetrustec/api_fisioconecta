@@ -13,7 +13,11 @@ class AtendimentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Atendimento
         fields = '__all__'
-
+        
+class EspecialidadeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = m.Especialidade
+        fields = '__all__'
 
 class DateTimeUTCField(serializers.DateTimeField):
     def to_representation(self, value):

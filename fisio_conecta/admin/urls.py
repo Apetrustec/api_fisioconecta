@@ -9,4 +9,6 @@ urlpatterns = [
     path('status-paciente/', admin.MudarStatusPacienteView.as_view()),
     path('avaliacoes-admin/', admin.ListarAvaliacoesAdmin.as_view()),
     path('verificar-admin/', admin.LoginAdmin.as_view()),
+    path('cadastrar-especialidade/', admin.EspecialidadeAdmin.as_view()),
+    path('cadastrar-admin/', admin.cadastrarAdminOrGetAdmin.as_view()),
 ]
