@@ -8,13 +8,15 @@ class AllFisioterapeutaSerializer(serializers.ModelSerializer):
     
     def get_especialidades(self, obj):
         especialidades_ativas = m.Fisio_especialidade.objects.filter(
-            fisioterapeuta=obj
+            fisioterapeuta=obj,
+            ativo=True
         ).select_related('especialidade')
 
         return [
             {
                 "id": fe.especialidade.id_especialidade,
-                "nome": fe.especialidade.nome
+                "nome": fe.especialidade.nome,
+                "ativo": fe.ativo
             }
             for fe in especialidades_ativas
         ]
@@ -41,7 +43,8 @@ class FisioterapeutaSerializer(serializers.ModelSerializer):
         return [
             {
                 "id": fe.especialidade.id_especialidade,
-                "nome": fe.especialidade.nome
+                "nome": fe.especialidade.nome,
+                "ativo": fe.ativo
             }
             for fe in especialidades_ativas
         ]
@@ -69,13 +72,15 @@ class TodosFisioSerializer(serializers.ModelSerializer):
     
     def get_especialidades(self, obj):
         especialidades_ativas = m.Fisio_especialidade.objects.filter(
-            fisioterapeuta=obj
+            fisioterapeuta=obj,
+            ativo=True
         ).select_related('especialidade')
 
         return [
             {
                 "id": fe.especialidade.id_especialidade,
-                "nome": fe.especialidade.nome
+                "nome": fe.especialidade.nome,
+                "ativo": fe.ativo
             }
             for fe in especialidades_ativas
         ]
@@ -98,13 +103,15 @@ class CamposBasicoFisioSerializer(serializers.ModelSerializer):
 
     def get_especialidades(self, obj):
         especialidades_ativas = m.Fisio_especialidade.objects.filter(
-            fisioterapeuta=obj
+            fisioterapeuta=obj,
+            ativo=True
         ).select_related('especialidade')
 
         return [
             {
                 "id": fe.especialidade.id_especialidade,
-                "nome": fe.especialidade.nome
+                "nome": fe.especialidade.nome,
+                "ativo": fe.ativo
             }
             for fe in especialidades_ativas
         ]
