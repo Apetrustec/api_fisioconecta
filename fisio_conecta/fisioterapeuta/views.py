@@ -128,9 +128,6 @@ class Crud (APIView):
             except m.Fisioterapeuta.DoesNotExist:
                 return Response({"error": "Fisioterapeuta não encontrado"}, status=404)
 
-            if not fisio.ativo:
-                return Response({"error": "Fisioterapeuta desativado"}, status=400)
-
             crefito = request.data.get('crefito')
             if crefito:
                 crefito_upper = crefito.upper()

@@ -52,7 +52,7 @@ class AtendimentoCrud(APIView):
                 'fisioterapeuta__pessoa',
                 'especialidade',
                 'endereco'
-            ).order_by('-data_hora')
+            ).order_by('data_hora')
 
             filtro = AtendimentoFilter(request.GET, queryset=queryset)
             if not filtro.is_valid():
@@ -327,8 +327,8 @@ class GetPropostas(APIView):
 
         fisioterapeuta = m.Fisioterapeuta.objects.filter(pessoa__email=request.user_data.get('email')).first()
 
-        if not fisioterapeuta:
-            return Response({"error": "Fisioterapeuta não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        if not fisioterapeuta.ativo:
+            return Response({"error": "Fisioterapeuta não encontrado."}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             especialidades_fisioterapeuta = fisioterapeuta.especialidades.all()
@@ -337,13 +337,14 @@ class GetPropostas(APIView):
                 isProposta=True,
                 status=4,  # Aguardando aprovação
                 especialidade__in=especialidades_fisioterapeuta,
-                fisioterapeuta__isnull=True
+                fisioterapeuta__isnull=True,
+                valor_maximo_proposta__gte=fisioterapeuta.valor_atendimento,
             ).exclude(
                 respostas__fisioterapeuta=fisioterapeuta,
                 respostas__status=3  # Exclui propostas que o fisio recusou 
             ).select_related(
                 'paciente__pessoa', 'especialidade', 'endereco'
-            ).order_by('-data_hora')
+            ).order_by('data_hora')
 
             filtro = AtendimentoFilter(request.GET, queryset=queryset)
             if not filtro.is_valid():
@@ -610,7 +611,7 @@ class ReagendarAtendimento(APIView):
             )
             atendimento.save()
 
-            serializer = ResponseAtendimentoSerializer(atendimento)
+            serializer = AtendimentoSerializer(atendimento)
             return Response(serializer.data, status=201)
 
         except Exception as e:

@@ -106,7 +106,12 @@ banco.sql
 static/
 restart
 .ebextensions/
-
+.mypy_cache/
 
 *.key
 *.crt
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

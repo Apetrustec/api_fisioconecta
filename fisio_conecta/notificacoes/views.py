@@ -1,21 +1,16 @@
 from rest_framework import status
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from fisio_conecta.permissions import IsLogged,IsAdmin
+from fisio_conecta.permissions import IsLogged, IsAdmin
 from fisio_conecta import models as m
 import firebase_admin
-from firebase_admin import messaging,credentials
+from firebase_admin import messaging
+from fisio_conecta.authentications import FirebaseAuthentication
+
 # from fisio_conecta.notificacoes.utils import enviar_multicast
 
 
-
-
-# endpoints feitos apenas para testar as notificações vai ser tudo removido --------------------------REMOVER NA PROXIMA ATUALIZAÇÃO DE API NO FISIO---------------------
-FISIO_APP_NAME = "fisio-conecta"
-
-if FISIO_APP_NAME not in firebase_admin._apps:
-    cred = credentials.Certificate("fisio-conecta-producao.json")
-    firebase_admin.initialize_app(cred, name=FISIO_APP_NAME)
 
 class CadastrarDispositivo(APIView):
     """
@@ -48,7 +43,7 @@ class CadastrarDispositivo(APIView):
                 dispositivo.descricao = descricao
                 dispositivo.save(update_fields=["descricao"])
 
-            app_fisio = firebase_admin.get_app(FISIO_APP_NAME)
+            app_fisio = firebase_admin.get_app('fisio_conecta')
 
             topic_name = "todos-usuarios"
             m.Topico.objects.get_or_create(pessoa=pessoa, nome=topic_name)
@@ -77,8 +72,8 @@ class NotificacaoAdmin(APIView):
     Esse endpoint serve para enviar notificação push para apenas uma pessoa 
     ou notificações por tópico conforme vem do corpo da requisição.
     """
-    # permission_classes = [IsAdmin]
-    # authentication_classes = [FirebaseAuthentication]
+    permission_classes = [IsAdmin]
+    authentication_classes = [FirebaseAuthentication]
 
     def post(self, request):
         try:
@@ -90,7 +85,7 @@ class NotificacaoAdmin(APIView):
             if not title or not body:
                 raise Exception("Título e texto são obrigatórios")
             
-            app_fisio = firebase_admin.get_app(FISIO_APP_NAME)
+            app_fisio = firebase_admin.get_app('fisio_conecta')
 
             # Notificação para uma pessoa específica
             if id_pessoa:
@@ -175,7 +170,7 @@ class PushNotification(APIView):
                 token=token,  
             )
 
-            app_fisio = firebase_admin.get_app(FISIO_APP_NAME)
+            app_fisio = firebase_admin.get_app('fisio_conecta')
 
             response = messaging.send(message, app=app_fisio)
 
@@ -212,7 +207,7 @@ class TestPushNotificationTopic(APIView):
                 topic=topic,  
             )
 
-            app_fisio = firebase_admin.get_app(FISIO_APP_NAME)
+            app_fisio = firebase_admin.get_app('fisio_conecta')
 
             response = messaging.send(message, app=app_fisio)
 
