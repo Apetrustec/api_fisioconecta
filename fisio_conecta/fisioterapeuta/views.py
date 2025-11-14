@@ -166,6 +166,13 @@ class Crud (APIView):
                         fisio_esp.ativo = True
                         fisio_esp.save(update_fields=['ativo'])
 
+                m.Fisio_especialidade.objects.filter(
+                    fisioterapeuta=fisio
+                ).exclude(
+                    especialidade_id__in=especialidades_ids
+                ).update(ativo=False)
+
+
             serializer = fisioSerializers.FisioterapeutaSerializer(fisio)
             return Response(serializer.data, status=200)
 
