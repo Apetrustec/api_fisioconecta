@@ -279,8 +279,9 @@ class PropostaAtendimento(APIView):
 
             fisioterapeutas = m.Fisioterapeuta.objects.filter(
                 especialidades__id_especialidade=especialidade_id,
-                pessoa__ativo=True
-            ).select_related('pessoa')
+                ativo=True,
+                valor_atendimento__lte=valor_maximo_proposta
+            )
             
             send_zapi = SendZapi()
             data = formatar_data_hora(atendimento.data_hora)
