@@ -58,7 +58,7 @@ class PessoaAdminView(APIView):
             if not admin:
                 return Response({"error": "Você não tem permissão para executar essa ação."}, status=403)
 
-            filterset = PessoaFilter(request.GET, queryset=m.Pessoa.objects.all())
+            filterset = PessoaFilter(request.GET, queryset=m.Pessoa.objects.all().order_by('-id_pessoa'))
             if not filterset.is_valid():
                 return Response(filterset.errors, status=400)
 
@@ -248,9 +248,13 @@ class MudarStatusFisioterapeutaView(APIView):
             try:
                 telefone = formatarTelefone(fisioterapeuta.pessoa.telefone)
                 texto = (
-                        f"Olá {fisioterapeuta.pessoa.nome}, seu cadastro foi aprovado pelo administrador. "
-                        f"Acesse o aplicativo Fisio conecta para começar a utilizar."
-                    )
+                            "Olá " + str(fisioterapeuta.pessoa.nome) + ",\n\n"
+                            "o seu acesso à plataforma Fisio Conecta foi liberado com sucesso.\n\n"
+                            "agora você já pode iniciar sua atuação como profissional parceiro.\n\n"
+                            "desejamos que essa nova etapa seja leve,produtiva e cheia de boas conexões.\n\n"
+                            "conte com a gente sempre que precisar.\n"
+                            "Estamos aqui para caminhar com você#vqv"
+                        )
                 sendzapi.enviar_mensagem_texto(texto, telefone)
             except Exception as e:
                 print(f"Erro ao enviar mensagem WhatsApp para o administrador: {str(e)}")
