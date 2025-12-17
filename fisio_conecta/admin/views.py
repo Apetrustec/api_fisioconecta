@@ -214,6 +214,20 @@ class MudarStatusPacienteView(APIView):
             paciente.ativo = False
         else:
             paciente.ativo = True
+            sendzapi = SendZapi()
+            try:
+                telefone = formatarTelefone(paciente.pessoa.telefone)
+                texto = (
+                            "Olá " + str(paciente.pessoa.nome) + ",\n\n"
+                            "Que bom ter você aqui. O seu acesso ao Fisio Conecta foi liberado com sucesso.\n\n"
+                            "A partir de agora, você pode encontrar o fisioterapeuta ideal para cuidar da sua evolução  e melhorar o seu bem-estar.\n\n"
+                            "Que essa nova etapa seja leve, tranquila e cheia de boas descobertas.\n\n"
+                            "E lembre-se, estamos ao seu lado em cada passo do caminho.\n\n"
+                            "Conte com a gente sempre que precisar. #vqv"
+                        )
+                sendzapi.enviar_mensagem_texto(texto, telefone)
+            except Exception as e:
+                print(f"Erro ao enviar mensagem WhatsApp para o administrador: {str(e)}")
         paciente.save()
         return Response({"status": "Status do paciente alterado com sucesso."})
 
@@ -249,11 +263,11 @@ class MudarStatusFisioterapeutaView(APIView):
                 telefone = formatarTelefone(fisioterapeuta.pessoa.telefone)
                 texto = (
                             "Olá " + str(fisioterapeuta.pessoa.nome) + ",\n\n"
-                            "o seu acesso à plataforma Fisio Conecta foi liberado com sucesso.\n\n"
-                            "agora você já pode iniciar sua atuação como profissional parceiro.\n\n"
-                            "desejamos que essa nova etapa seja leve,produtiva e cheia de boas conexões.\n\n"
-                            "conte com a gente sempre que precisar.\n"
-                            "Estamos aqui para caminhar com você#vqv"
+                            "O seu acesso à plataforma Fisio Conecta foi liberado com sucesso.\n\n"
+                            "Agora você já pode iniciar a sua atuação como profissional parceiro.\n\n"
+                            "Desejamos que essa nova etapa seja leve, produtiva e cheia de boas conexões.\n\n"
+                            "Conte com a gente sempre que precisar.\n\n"
+                            "Estamos aqui para caminhar com você.#vqv"
                         )
                 sendzapi.enviar_mensagem_texto(texto, telefone)
             except Exception as e:
