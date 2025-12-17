@@ -59,7 +59,7 @@ class Administrador(models.Model):
 class Paciente(models.Model):
     id_paciente = models.AutoField(primary_key=True)
     pessoa = models.OneToOneField(Pessoa, on_delete=models.CASCADE, null=True)
-    ativo = models.BooleanField(default=True)
+    ativo = models.BooleanField(default=False)
     altura = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     peso = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     uso_remedio_continuo = models.TextField(max_length=300, null=True, blank=True)
